@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: riva-text-to-speech
+  name: riva-text-to-speech
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: riva-text-to-speech
+  strategy:
+    rollingUpdate:
+  template:
+    metadata:
+      labels:
+        run: riva-text-to-speech
+    spec:
+      hostname: riva-text-to-speech
+      containers:
+      - name: riva-text-to-speech
+        tty: true
+        image: latonaio/riva-text-to-speech:latest
+        imagePullPolicy: IfNotPresent
+        command: ["python3"]
+        args: ["text-to-speech/tts-realtime.py"]
+        env:
+        - name: RABBITMQ_URL
+          value: amqp://guest:guest@x.x.x.x:32094/s2t2s
+        - name: QUEUE_ORIGIN
+          value: send-transcript-to-riva-tts-queue
+        - name: DEVICE_ID
+          value: "24"
+        - name: SERVER_ADDRESS
+          value: x.x.x.x:50051
+        volumeMounts:
+        - mountPath: /app/mnt
+          name: current-dir
+        - mountPath: /dev/snd
+          name: dev-snd
+        securityContext:
+          privileged: true
+        workingDir: /app/mnt
+      volumes:
+      - name: current-dir
+        hostPath:
+          path: /pass/to/currentdir/
+          type: Directory
+      - name: dev-snd
+        hostPath:
+          path: /dev/snd
+          type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: riva-text-to-speech
+  name: riva-text-to-speech
+spec:
+  selector:
+    run: riva-text-to-speech
+  type: ClusterIP
+  ports:
+  - port: 8889
+    targetPort: 8889
+    protocol: TCP
+---

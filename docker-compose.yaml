@@ -1,0 +1,18 @@
+version: '3'
+services:
+  riva-text-to-speech:
+    container_name: riva-text-to-speech
+    build: .
+    #environment:
+    #  - RABBITMQ_URL=amqp://guest:guest@x.x.x.x:32094/s2t2s
+    #  - QUEUE_ORIGIN=send-transcript-to-riva-tts-queue
+    #  - DEVICE_ID=24
+    #  - SERVER_ADDRESS=x.x.x.x:50051
+    volumes:
+      - ./:/app/mnt
+    ports:
+      - 8889:8889
+    devices:
+      - /dev/snd:/dev/snd
+    working_dir: /app/mnt
+    tty: true
